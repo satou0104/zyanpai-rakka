@@ -1,0 +1,10 @@
+{
+  "appId": "com.satou0104.janpairakka",
+  "appName": "雀牌落下",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "ios": {
+    "contentInset": "always",
+    "backgroundColor": "#0a0a0f"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "janpai-rakka",
+  "version": "1.0.0",
+  "description": "雀牌落下 - 落ちてくる麻雀牌で役を作るゲーム",
+  "main": "index.html",
+  "scripts": {
+    "sync": "npx cap sync ios"
+  },
+  "dependencies": {
+    "@capacitor/cli": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/ios": "^7.0.0"
+  }
+}

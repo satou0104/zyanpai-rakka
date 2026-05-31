@@ -1,0 +1,13 @@
+node_modules/
+ios/App/Pods/
+DerivedData/
+.DS_Store
+Thumbs.db
+*.key
+*.p12
+*.pem
+*.cer
+*.mobileprovision
+左右/
+.kiro/
+.vscode/
