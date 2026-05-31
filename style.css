@@ -25,6 +25,8 @@ html, body {
     display: flex;
     justify-content: center;
     align-items: center;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .screen.hidden {
@@ -209,13 +211,15 @@ html, body {
 #hand-tiles {
     display: flex;
     justify-content: center;
-    gap: 2px;
+    flex-wrap: wrap;
+    gap: 3px;
+    max-width: calc(9 * 32px + 8 * 3px);
+    margin: 0 auto;
 }
 
 .hand-tile {
-    width: calc((100vw - 40px) / 14);
-    max-width: 28px;
-    height: 38px;
+    width: 32px;
+    height: 42px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -433,13 +437,16 @@ html, body {
 }
 
 /* ハイスコア画面 */
+#highscore-screen {
+    align-items: flex-start;
+}
+
 #highscore-container {
     padding: 20px;
+    padding-top: calc(20px + env(safe-area-inset-top, 0px));
     width: 100%;
     max-width: 380px;
-    height: 100%;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    margin: 0 auto;
 }
 
 #highscore-container h2 {
