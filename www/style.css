@@ -209,13 +209,13 @@ html, body {
 #hand-tiles {
     display: flex;
     justify-content: center;
-    flex-wrap: wrap;
-    gap: 3px;
+    gap: 2px;
 }
 
 .hand-tile {
-    width: 32px;
-    height: 42px;
+    width: calc((100vw - 40px) / 14);
+    max-width: 28px;
+    height: 38px;
     display: flex;
     justify-content: center;
     align-items: center;
