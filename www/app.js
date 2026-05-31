@@ -1,22 +1,14 @@
 // 雀牌落下 - メインゲームロジック
-// 麻雀牌の定義（テキスト表示用）
-const TILE_LABELS = {
+// 麻雀牌の画像パス定義
+const TILE_IMAGES = {
     // 萬子 (1m-9m)
-    man: ['一','二','三','四','五','六','七','八','九'],
+    man: ['manzu/1man.png','manzu/2man.png','manzu/3man.png','manzu/4man.png','manzu/5man.png','manzu/6man.png','manzu/7man.png','manzu/8man.png','manzu/9man.png'],
     // 筒子 (1p-9p)
-    pin: ['①','②','③','④','⑤','⑥','⑦','⑧','⑨'],
+    pin: ['pinzu/1pin.png','pinzu/2pin.png','pinzu/3pin.png','pinzu/4pin.png','pinzu/5pin.png','pinzu/6pin.png','pinzu/7pin.png','pinzu/8pin.png','pinzu/9pin.png'],
     // 索子 (1s-9s)
-    sou: ['1','2','3','4','5','6','7','8','9'],
+    sou: ['so-zu/1so.png','so-zu/2so.png','so-zu/3so.png','so-zu/4so.png','so-zu/5so.png','so-zu/6so.png','so-zu/7so.png','so-zu/8so.png','so-zu/9so.png'],
     // 字牌 (東南西北白發中)
-    jihai: ['東','南','西','北','白','發','中']
-};
-
-// 牌の色
-const TILE_COLORS = {
-    man: '#e74c3c',  // 赤（萬子）
-    pin: '#2980b9',  // 青（筒子）
-    sou: '#27ae60',  // 緑（索子）
-    jihai: '#2c3e50' // 黒（字牌）
+    jihai: ['zihai/ton.png','zihai/nan.png','zihai/sya.png','zihai/pei.png','zihai/haku.png','zihai/hatu.png','zihai/tyun.png']
 };
 
 // 牌のID体系: suit(0-3) * 9 + number(0-8), 字牌は suit=3, number=0-6
@@ -28,33 +20,12 @@ function tileIdToInfo(id) {
     return { suit: 'jihai', num: id - 27 + 1, isJihai: true };
 }
 
-// 牌IDからラベルテキストを取得
-function tileIdToLabel(id) {
-    if (id < 9) return TILE_LABELS.man[id];
-    if (id < 18) return TILE_LABELS.pin[id - 9];
-    if (id < 27) return TILE_LABELS.sou[id - 18];
-    return TILE_LABELS.jihai[id - 27];
-}
-
-// 牌IDから種類名を取得
-function tileIdToSuit(id) {
-    if (id < 9) return 'man';
-    if (id < 18) return 'pin';
-    if (id < 27) return 'sou';
-    return 'jihai';
-}
-
-// 牌IDから色を取得
-function tileIdToColor(id) {
-    return TILE_COLORS[tileIdToSuit(id)];
-}
-
-// 牌IDからサブラベル（種類表示）を取得
-function tileIdToSuitLabel(id) {
-    if (id < 9) return '萬';
-    if (id < 18) return '筒';
-    if (id < 27) return '索';
-    return '';
+// 牌IDから画像パスを取得
+function tileIdToImage(id) {
+    if (id < 9) return TILE_IMAGES.man[id];
+    if (id < 18) return TILE_IMAGES.pin[id - 9];
+    if (id < 27) return TILE_IMAGES.sou[id - 18];
+    return TILE_IMAGES.jihai[id - 27];
 }
 
 // 全牌の山を生成（各牌4枚ずつ = 34種 x 4 = 136枚）
@@ -720,9 +691,7 @@ class MahjongFallGame {
 
     spawnTile() {
         const tileId = this.getNextTileId();
-        const label = tileIdToLabel(tileId);
-        const color = tileIdToColor(tileId);
-        const suitLabel = tileIdToSuitLabel(tileId);
+        const imgSrc = tileIdToImage(tileId);
 
         const gameAreaWidth = this.gameArea.offsetWidth;
         // ランダムな横位置（端から少し余白を取る）
@@ -734,20 +703,12 @@ class MahjongFallGame {
         el.style.left = x + 'px';
         el.style.top = '0px';
 
-        // 牌面の描画
-        const mainText = document.createElement('span');
-        mainText.className = 'tile-main';
-        mainText.textContent = label;
-        mainText.style.color = color;
-        el.appendChild(mainText);
-
-        if (suitLabel) {
-            const subText = document.createElement('span');
-            subText.className = 'tile-sub';
-            subText.textContent = suitLabel;
-            subText.style.color = color;
-            el.appendChild(subText);
-        }
+        // 牌画像
+        const img = document.createElement('img');
+        img.src = imgSrc;
+        img.className = 'tile-img';
+        img.draggable = false;
+        el.appendChild(img);
 
         // タップイベント（重複防止フラグ）
         let tapped = false;
@@ -846,21 +807,11 @@ class MahjongFallGame {
         sorted.forEach(id => {
             const div = document.createElement('div');
             div.className = 'hand-tile';
-            const label = tileIdToLabel(id);
-            const color = tileIdToColor(id);
-            const suitLabel = tileIdToSuitLabel(id);
-            const mainSpan = document.createElement('span');
-            mainSpan.className = 'tile-main';
-            mainSpan.textContent = label;
-            mainSpan.style.color = color;
-            div.appendChild(mainSpan);
-            if (suitLabel) {
-                const subSpan = document.createElement('span');
-                subSpan.className = 'tile-sub';
-                subSpan.textContent = suitLabel;
-                subSpan.style.color = color;
-                div.appendChild(subSpan);
-            }
+            const img = document.createElement('img');
+            img.src = tileIdToImage(id);
+            img.className = 'tile-img';
+            img.draggable = false;
+            div.appendChild(img);
             this.handTilesElement.appendChild(div);
         });
     }
@@ -899,21 +850,11 @@ class MahjongFallGame {
         sorted.forEach(id => {
             const div = document.createElement('div');
             div.className = 'result-tile';
-            const label = tileIdToLabel(id);
-            const color = tileIdToColor(id);
-            const suitLabel = tileIdToSuitLabel(id);
-            const mainSpan = document.createElement('span');
-            mainSpan.className = 'tile-main';
-            mainSpan.textContent = label;
-            mainSpan.style.color = color;
-            div.appendChild(mainSpan);
-            if (suitLabel) {
-                const subSpan = document.createElement('span');
-                subSpan.className = 'tile-sub';
-                subSpan.textContent = suitLabel;
-                subSpan.style.color = color;
-                div.appendChild(subSpan);
-            }
+            const img = document.createElement('img');
+            img.src = tileIdToImage(id);
+            img.className = 'tile-img';
+            img.draggable = false;
+            div.appendChild(img);
             resultHand.appendChild(div);
         });
 

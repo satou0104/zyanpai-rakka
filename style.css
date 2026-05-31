@@ -164,13 +164,11 @@ html, body {
     width: 44px;
     height: 58px;
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%);
-    border-radius: 6px;
-    border: 2px solid #bbb;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.8);
+    background: transparent;
+    border: none;
+    box-shadow: none;
     cursor: pointer;
     transform: translateX(-50%);
     transition: opacity 0.2s;
@@ -181,22 +179,14 @@ html, body {
     opacity: 0.7;
 }
 
-.falling-tile .tile-main {
-    font-size: 22px;
-    font-weight: 900;
-    line-height: 1;
-}
-
-.falling-tile .tile-sub {
-    font-size: 10px;
-    font-weight: 700;
-    line-height: 1;
-    margin-top: 2px;
+.falling-tile .tile-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
 }
 
 .falling-tile.selected {
-    background: #00ff88;
-    border-color: #00cc66;
     animation: tileSelect 0.3s ease-out;
 }
 
@@ -227,26 +217,14 @@ html, body {
     width: 32px;
     height: 42px;
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%);
-    border-radius: 4px;
-    border: 1px solid #bbb;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
-.hand-tile .tile-main {
-    font-size: 16px;
-    font-weight: 900;
-    line-height: 1;
-}
-
-.hand-tile .tile-sub {
-    font-size: 8px;
-    font-weight: 700;
-    line-height: 1;
-    margin-top: 1px;
+.hand-tile .tile-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 #game-controls {
@@ -288,25 +266,14 @@ html, body {
     width: 36px;
     height: 46px;
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%);
-    border-radius: 4px;
-    border: 1px solid #bbb;
 }
 
-.result-tile .tile-main {
-    font-size: 18px;
-    font-weight: 900;
-    line-height: 1;
-}
-
-.result-tile .tile-sub {
-    font-size: 9px;
-    font-weight: 700;
-    line-height: 1;
-    margin-top: 1px;
+.result-tile .tile-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 #result-yaku {
