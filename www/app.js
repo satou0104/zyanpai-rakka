@@ -675,18 +675,20 @@ class MahjongFallGame {
         this.fallingTiles = [];
         this.tilePool = createTilePool();
         this.poolIndex = 0;
-        this.timeLeft = 60;
 
         // モードに応じて速度設定
         if (this.mode === 'superhard') {
             this.gameSpeed = 3.5;
             this.spawnDelay = 400;
+            this.timeLeft = 30;
         } else if (this.mode === 'hard') {
             this.gameSpeed = 2.5;
             this.spawnDelay = 600;
+            this.timeLeft = 45;
         } else {
             this.gameSpeed = 1.5;
             this.spawnDelay = 800;
+            this.timeLeft = 60;
         }
 
         this.gameArea.innerHTML = '';
