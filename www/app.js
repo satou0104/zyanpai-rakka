@@ -437,6 +437,8 @@ class MahjongFallGame {
         this.gameSpeed = 1.5;
         this.spawnDelay = 800;
         this.audioContext = null;
+        this.mode = 'normal'; // normal, hard, superhard
+        this.currentScoreTab = 'normal';
 
         this.init();
     }
@@ -528,11 +530,37 @@ class MahjongFallGame {
 
         // メニューボタン
         document.getElementById('start-menu-btn').addEventListener('click', () => {
+            this.mode = 'normal';
             this.showScreen('game-screen');
             this.startGame();
         });
         document.getElementById('start-menu-btn').addEventListener('touchend', (e) => {
             e.preventDefault();
+            this.mode = 'normal';
+            this.showScreen('game-screen');
+            this.startGame();
+        });
+
+        document.getElementById('start-hard-btn').addEventListener('click', () => {
+            this.mode = 'hard';
+            this.showScreen('game-screen');
+            this.startGame();
+        });
+        document.getElementById('start-hard-btn').addEventListener('touchend', (e) => {
+            e.preventDefault();
+            this.mode = 'hard';
+            this.showScreen('game-screen');
+            this.startGame();
+        });
+
+        document.getElementById('start-superhard-btn').addEventListener('click', () => {
+            this.mode = 'superhard';
+            this.showScreen('game-screen');
+            this.startGame();
+        });
+        document.getElementById('start-superhard-btn').addEventListener('touchend', (e) => {
+            e.preventDefault();
+            this.mode = 'superhard';
             this.showScreen('game-screen');
             this.startGame();
         });
@@ -545,6 +573,17 @@ class MahjongFallGame {
             e.preventDefault();
             this.showScreen('highscore-screen');
             this.displayHighScores();
+        });
+
+        // ハイスコアタブ
+        document.getElementById('normal-tab').addEventListener('click', () => {
+            this.switchScoreTab('normal');
+        });
+        document.getElementById('hard-tab').addEventListener('click', () => {
+            this.switchScoreTab('hard');
+        });
+        document.getElementById('superhard-tab').addEventListener('click', () => {
+            this.switchScoreTab('superhard');
         });
 
         document.getElementById('instructions-btn').addEventListener('click', () => {
@@ -637,8 +676,18 @@ class MahjongFallGame {
         this.tilePool = createTilePool();
         this.poolIndex = 0;
         this.timeLeft = 60;
-        this.gameSpeed = 1.5;
-        this.spawnDelay = 800;
+
+        // モードに応じて速度設定
+        if (this.mode === 'superhard') {
+            this.gameSpeed = 3.5;
+            this.spawnDelay = 400;
+        } else if (this.mode === 'hard') {
+            this.gameSpeed = 2.5;
+            this.spawnDelay = 600;
+        } else {
+            this.gameSpeed = 1.5;
+            this.spawnDelay = 800;
+        }
 
         this.gameArea.innerHTML = '';
         this.handTilesElement.innerHTML = '';
@@ -894,7 +943,8 @@ class MahjongFallGame {
 
     // ハイスコア管理
     saveHighScore(score, yaku) {
-        let highscores = JSON.parse(localStorage.getItem('jantama_highscores') || '[]');
+        const key = `jantama_highscores_${this.mode}`;
+        let highscores = JSON.parse(localStorage.getItem(key) || '[]');
         highscores.push({
             score: score,
             yaku: yaku.map(y => y.name).join(', ') || 'なし',
@@ -902,12 +952,21 @@ class MahjongFallGame {
         });
         highscores.sort((a, b) => b.score - a.score);
         highscores = highscores.slice(0, 10);
-        localStorage.setItem('jantama_highscores', JSON.stringify(highscores));
+        localStorage.setItem(key, JSON.stringify(highscores));
+    }
+
+    // タブ切り替え
+    switchScoreTab(tab) {
+        this.currentScoreTab = tab;
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(tab === 'normal' ? 'normal-tab' : tab === 'hard' ? 'hard-tab' : 'superhard-tab').classList.add('active');
+        this.displayHighScores();
     }
 
     displayHighScores() {
         const list = document.getElementById('highscore-list');
-        const scores = JSON.parse(localStorage.getItem('jantama_highscores') || '[]');
+        const key = `jantama_highscores_${this.currentScoreTab}`;
+        const scores = JSON.parse(localStorage.getItem(key) || '[]');
 
         if (scores.length === 0) {
             list.innerHTML = '<p class="no-scores">まだスコアがありません</p>';

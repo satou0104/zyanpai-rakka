@@ -120,6 +120,24 @@ html, body {
     transform: scale(0.97);
 }
 
+.menu-btn.hard-btn {
+    border-color: rgba(255, 165, 0, 0.6);
+    color: #ffa500;
+}
+
+.menu-btn.hard-btn:active {
+    background: rgba(255, 165, 0, 0.2);
+}
+
+.menu-btn.superhard-btn {
+    border-color: rgba(255, 50, 50, 0.6);
+    color: #ff3232;
+}
+
+.menu-btn.superhard-btn:active {
+    background: rgba(255, 50, 50, 0.2);
+}
+
 /* ゲーム画面 */
 #game-container {
     width: 100%;
@@ -454,6 +472,35 @@ html, body {
     color: #00ff88;
     margin-bottom: 20px;
     text-align: center;
+}
+
+.mode-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 10px 4px;
+    font-size: 13px;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.05);
+    color: #888;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tab-btn.active {
+    background: rgba(0, 255, 136, 0.15);
+    color: #00ff88;
+    border-color: rgba(0, 255, 136, 0.5);
+}
+
+.tab-btn:active {
+    transform: scale(0.95);
 }
 
 .highscore-content {
