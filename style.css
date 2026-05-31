@@ -239,8 +239,9 @@ html, body {
     padding: 20px;
     width: 100%;
     max-width: 380px;
-    max-height: 90vh;
+    height: 100%;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 #result-title {
@@ -325,8 +326,9 @@ html, body {
     padding: 20px;
     width: 100%;
     max-width: 380px;
-    max-height: 90vh;
+    height: 100%;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 #instructions-container h2 {
@@ -435,8 +437,9 @@ html, body {
     padding: 20px;
     width: 100%;
     max-width: 380px;
-    max-height: 90vh;
+    height: 100%;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 #highscore-container h2 {
