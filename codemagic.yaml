@@ -34,8 +34,7 @@ workflows:
           cd ios/App
           agvtool new-version -all $(($(date +%s) / 60))
       - name: Set up code signing settings on Xcode project
-        script: |
-          xcode-project use-profiles
+        script: xcode-project use-profiles
       - name: Build iOS
         script: |
           xcode-project build-ipa \
