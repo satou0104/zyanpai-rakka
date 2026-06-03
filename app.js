@@ -1,17 +1,17 @@
-// 雀牌落下 - メインゲームロジック
-// 麻雀牌の画像パス定義
+// Mahjong Drop - Main Game Logic
+// Tile image paths
 const TILE_IMAGES = {
-    // 萬子 (1m-9m)
+    // Man (1m-9m)
     man: ['manzu/1man.png','manzu/2man.png','manzu/3man.png','manzu/4man.png','manzu/5man.png','manzu/6man.png','manzu/7man.png','manzu/8man.png','manzu/9man.png'],
-    // 筒子 (1p-9p)
+    // Pin (1p-9p)
     pin: ['pinzu/1pin.png','pinzu/2pin.png','pinzu/3pin.png','pinzu/4pin.png','pinzu/5pin.png','pinzu/6pin.png','pinzu/7pin.png','pinzu/8pin.png','pinzu/9pin.png'],
-    // 索子 (1s-9s)
+    // Sou (1s-9s)
     sou: ['so-zu/1so.png','so-zu/2so.png','so-zu/3so.png','so-zu/4so.png','so-zu/5so.png','so-zu/6so.png','so-zu/7so.png','so-zu/8so.png','so-zu/9so.png'],
-    // 字牌 (東南西北白發中)
+    // Honors (East/South/West/North/Haku/Hatsu/Chun)
     jihai: ['zihai/ton.png','zihai/nan.png','zihai/sya.png','zihai/pei.png','zihai/haku.png','zihai/hatu.png','zihai/tyun.png']
 };
 
-// 牌のID体系: suit(0-3) * 9 + number(0-8), 字牌は suit=3, number=0-6
+// Tile ID system: suit*9 + number(0-8), honors: suit=3, number=0-6
 // man: 0-8, pin: 9-17, sou: 18-26, jihai: 27-33
 function tileIdToInfo(id) {
     if (id < 9) return { suit: 'man', num: id + 1, isJihai: false };
@@ -20,7 +20,7 @@ function tileIdToInfo(id) {
     return { suit: 'jihai', num: id - 27 + 1, isJihai: true };
 }
 
-// 牌IDから画像パスを取得
+// Get image path from tile ID
 function tileIdToImage(id) {
     if (id < 9) return TILE_IMAGES.man[id];
     if (id < 18) return TILE_IMAGES.pin[id - 9];
@@ -28,7 +28,7 @@ function tileIdToImage(id) {
     return TILE_IMAGES.jihai[id - 27];
 }
 
-// 全牌の山を生成（各牌4枚ずつ = 34種 x 4 = 136枚）
+// Generate tile pool (4 copies of each tile = 34 types x 4 = 136 tiles)
 function createTilePool() {
     const pool = [];
     for (let id = 0; id < 34; id++) {
@@ -36,7 +36,7 @@ function createTilePool() {
             pool.push(id);
         }
     }
-    // シャッフル
+    // Shuffle
     for (let i = pool.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [pool[i], pool[j]] = [pool[j], pool[i]];
@@ -44,36 +44,35 @@ function createTilePool() {
     return pool;
 }
 
-// ===== 役判定ロジック =====
+// ===== Yaku (Winning Hand) Evaluation =====
 
-// 手牌を牌IDの配列(14枚)として受け取り、役を判定する
+// Evaluate hand (receives array of 14 tile IDs)
 function judgeHand(hand) {
-    // handは牌IDの配列(14枚)
-    // カウント配列を作成
+    // Build count array
     const counts = new Array(34).fill(0);
     hand.forEach(id => counts[id]++);
 
     const results = [];
 
-    // 七対子チェック
+    // Seven Pairs check
     if (isChitoitsu(counts)) {
-        results.push({ name: '七対子', han: 2 });
-        // 七対子の追加役チェック
+        results.push({ name: 'Seven Pairs', han: 2 });
+        // Extra yaku for Seven Pairs
         const extra = checkChitoitsuExtra(hand, counts);
         extra.forEach(y => results.push(y));
     }
 
-    // 国士無双チェック
+    // Thirteen Orphans check
     if (isKokushi(counts)) {
-        results.push({ name: '国士無双', han: 13 });
+        results.push({ name: 'Thirteen Orphans', han: 13 });
         return { yaku: results, score: calculateScore(13) };
     }
 
-    // 通常形（4面子1雀頭）の分解を試みる
+    // Standard form (4 melds + 1 pair) decomposition
     const decompositions = decompose(counts);
 
     if (decompositions.length > 0) {
-        // 各分解パターンで役を判定し、最高得点を選ぶ
+        // Check yaku for each decomposition, pick the highest scoring
         let bestYaku = [];
         let bestHan = 0;
 
@@ -91,17 +90,17 @@ function judgeHand(hand) {
         }
     }
 
-    // 七対子の結果があればそれを返す
+    // Return Seven Pairs result if available
     if (results.length > 0) {
         const totalHan = results.reduce((sum, y) => sum + y.han, 0);
         return { yaku: results, score: calculateScore(totalHan) };
     }
 
-    // 役なし
+    // No yaku
     return { yaku: [], score: 0 };
 }
 
-// 七対子判定
+// Seven Pairs check
 function isChitoitsu(counts) {
     let pairs = 0;
     for (let i = 0; i < 34; i++) {
@@ -111,21 +110,17 @@ function isChitoitsu(counts) {
     return pairs === 7;
 }
 
-// 七対子の追加役
+// Extra yaku for Seven Pairs
 function checkChitoitsuExtra(hand, counts) {
     const extra = [];
-    // タンヤオ
-    if (isTanyao(hand)) extra.push({ name: 'タンヤオ', han: 1 });
-    // 混一色
-    if (isHonitsu(counts)) extra.push({ name: '混一色', han: 3 });
-    // 清一色
-    if (isChinitsu(counts)) extra.push({ name: '清一色', han: 6 });
-    // 字一色
-    if (isTsuiisou(counts)) extra.push({ name: '字一色', han: 13 });
+    if (isTanyao(hand)) extra.push({ name: 'All Simples', han: 1 });
+    if (isHonitsu(counts)) extra.push({ name: 'Half Flush', han: 3 });
+    if (isChinitsu(counts)) extra.push({ name: 'Full Flush', han: 6 });
+    if (isTsuiisou(counts)) extra.push({ name: 'All Honors', han: 13 });
     return extra;
 }
 
-// 国士無双判定
+// Thirteen Orphans check
 function isKokushi(counts) {
     const kokushiTiles = [0,8,9,17,18,26,27,28,29,30,31,32,33];
     let pairFound = false;
@@ -136,12 +131,12 @@ function isKokushi(counts) {
     return pairFound;
 }
 
-// 面子分解（4面子1雀頭）
+// Meld decomposition (4 melds + 1 pair)
 function decompose(counts) {
     const results = [];
     const c = counts.slice();
 
-    // 雀頭を選ぶ
+    // Select pair
     for (let head = 0; head < 34; head++) {
         if (c[head] < 2) continue;
         c[head] -= 2;
@@ -154,17 +149,17 @@ function decompose(counts) {
     return results;
 }
 
-// 面子を抽出（再帰）
+// Extract melds (recursive)
 function extractMentsu(counts, startIdx, mentsu) {
     if (mentsu.length === 4) {
-        // 全て使い切ったか確認
+        // Check if all tiles are used
         return counts.every(c => c === 0);
     }
 
     for (let i = startIdx; i < 34; i++) {
         if (counts[i] === 0) continue;
 
-        // 刻子を試す
+        // Try triplet
         if (counts[i] >= 3) {
             counts[i] -= 3;
             mentsu.push({ type: 'kou', tile: i });
@@ -173,7 +168,7 @@ function extractMentsu(counts, startIdx, mentsu) {
             counts[i] += 3;
         }
 
-        // 順子を試す（数牌のみ、8以下）
+        // Try sequence (numbered tiles only, up to 6)
         if (i < 27 && (i % 9) <= 6) {
             if (counts[i] >= 1 && counts[i+1] >= 1 && counts[i+2] >= 1) {
                 counts[i]--;
@@ -188,13 +183,13 @@ function extractMentsu(counts, startIdx, mentsu) {
             }
         }
 
-        // この牌で面子が作れなければ失敗
+        // Cannot make meld with this tile = fail
         break;
     }
     return false;
 }
 
-// 通常形の役判定
+// Standard form yaku evaluation
 function checkYaku(hand, counts, decomp) {
     const yaku = [];
     const { head, mentsu } = decomp;
@@ -202,79 +197,77 @@ function checkYaku(hand, counts, decomp) {
     const shunCount = mentsu.filter(m => m.type === 'shun').length;
     const kouCount = mentsu.filter(m => m.type === 'kou').length;
 
-    // タンヤオ
-    if (isTanyao(hand)) yaku.push({ name: 'タンヤオ', han: 1 });
+    // All Simples
+    if (isTanyao(hand)) yaku.push({ name: 'All Simples', han: 1 });
 
-    // 平和（4順子 + 数牌雀頭 + 役牌でない雀頭）
+    // Pinfu (4 sequences + non-value pair)
     if (shunCount === 4 && !headInfo.isJihai) {
-        yaku.push({ name: '平和', han: 1 });
+        yaku.push({ name: 'Pinfu', han: 1 });
     }
 
-    // 一盃口（同じ順子が2つ）
-    if (hasIipeiko(mentsu)) yaku.push({ name: '一盃口', han: 1 });
+    // Pure Double Sequence
+    if (hasIipeiko(mentsu)) yaku.push({ name: 'Pure Double Sequence', han: 1 });
 
-    // 二盃口（同じ順子が2組）
+    // Twice Pure Double Sequence
     if (hasRyanpeiko(mentsu)) {
-        // 一盃口を削除して二盃口に
-        const idx = yaku.findIndex(y => y.name === '一盃口');
+        const idx = yaku.findIndex(y => y.name === 'Pure Double Sequence');
         if (idx >= 0) yaku.splice(idx, 1);
-        yaku.push({ name: '二盃口', han: 3 });
+        yaku.push({ name: 'Twice Pure Double Sequence', han: 3 });
     }
 
-    // 役牌（三元牌: 白發中）
+    // Value Tiles (Dragons: Haku/Hatsu/Chun)
     for (const m of mentsu) {
         if (m.type === 'kou') {
-            if (m.tile === 31) yaku.push({ name: '役牌（白）', han: 1 });
-            if (m.tile === 32) yaku.push({ name: '役牌（發）', han: 1 });
-            if (m.tile === 33) yaku.push({ name: '役牌（中）', han: 1 });
-            // 風牌（東）も役牌扱い
-            if (m.tile === 27) yaku.push({ name: '役牌（東）', han: 1 });
+            if (m.tile === 31) yaku.push({ name: 'Value Tile (Haku)', han: 1 });
+            if (m.tile === 32) yaku.push({ name: 'Value Tile (Hatsu)', han: 1 });
+            if (m.tile === 33) yaku.push({ name: 'Value Tile (Chun)', han: 1 });
+            if (m.tile === 27) yaku.push({ name: 'Value Tile (East)', han: 1 });
         }
     }
 
-    // 対々和（4刻子）
-    if (kouCount === 4) yaku.push({ name: '対々和', han: 2 });
+    // All Triplets
+    if (kouCount === 4) yaku.push({ name: 'All Triplets', han: 2 });
 
-    // 三暗刻
-    if (kouCount === 3) yaku.push({ name: '三暗刻', han: 2 });
+    // Three Concealed Triplets
+    if (kouCount === 3) yaku.push({ name: 'Three Concealed Triplets', han: 2 });
 
-    // 混一色
-    if (isHonitsu(counts)) yaku.push({ name: '混一色', han: 3 });
+    // Half Flush
+    if (isHonitsu(counts)) yaku.push({ name: 'Half Flush', han: 3 });
 
-    // 清一色
-    if (isChinitsu(counts)) yaku.push({ name: '清一色', han: 6 });
+    // Full Flush
+    if (isChinitsu(counts)) yaku.push({ name: 'Full Flush', han: 6 });
 
-    // 混老頭（1,9,字牌のみ）
-    if (isHonroutou(hand)) yaku.push({ name: '混老頭', han: 2 });
+    // Mixed Terminals
+    if (isHonroutou(hand)) yaku.push({ name: 'Mixed Terminals', han: 2 });
 
-    // 小三元（三元牌2刻子+三元牌雀頭）
-    if (isShousangen(mentsu, head)) yaku.push({ name: '小三元', han: 2 });
+    // Little Three Dragons
+    if (isShousangen(mentsu, head)) yaku.push({ name: 'Little Three Dragons', han: 2 });
 
-    // 大三元（三元牌3刻子）
-    if (isDaisangen(mentsu)) yaku.push({ name: '大三元', han: 13 });
+    // Big Three Dragons
+    if (isDaisangen(mentsu)) yaku.push({ name: 'Big Three Dragons', han: 13 });
 
-    // 字一色
-    if (isTsuiisou(counts)) yaku.push({ name: '字一色', han: 13 });
+    // All Honors
+    if (isTsuiisou(counts)) yaku.push({ name: 'All Honors', han: 13 });
 
-    // 四暗刻
-    if (kouCount === 4) yaku.push({ name: '四暗刻', han: 13 });
+    // Four Concealed Triplets
+    if (kouCount === 4) yaku.push({ name: 'Four Concealed Triplets', han: 13 });
 
-    // 清老頭（1,9のみ）
-    if (isChinroutou(hand)) yaku.push({ name: '清老頭', han: 13 });
+    // Pure Terminals
+    if (isChinroutou(hand)) yaku.push({ name: 'Pure Terminals', han: 13 });
 
-    // 一気通貫
-    if (isIkkitsukan(mentsu)) yaku.push({ name: '一気通貫', han: 2 });
+    // Straight
+    if (isIkkitsukan(mentsu)) yaku.push({ name: 'Straight', han: 2 });
 
-    // 三色同順
-    if (isSanshokuDoujun(mentsu)) yaku.push({ name: '三色同順', han: 2 });
+    // Mixed Triple Sequence
+    if (isSanshokuDoujun(mentsu)) yaku.push({ name: 'Mixed Triple Sequence', han: 2 });
 
-    // 三色同刻
-    if (isSanshokuDoukou(mentsu)) yaku.push({ name: '三色同刻', han: 2 });
+    // Triple Triplets
+    if (isSanshokuDoukou(mentsu)) yaku.push({ name: 'Triple Triplets', han: 2 });
 
     return yaku;
 }
 
-// タンヤオ（2-8のみ）
+// All Simples (2-8 only)
 function isTanyao(hand) {
     return hand.every(id => {
         const info = tileIdToInfo(id);
@@ -283,7 +276,7 @@ function isTanyao(hand) {
     });
 }
 
-// 混一色（1種の数牌+字牌のみ）
+// Half Flush (one suit + honors only)
 function isHonitsu(counts) {
     const hasSuit = [false, false, false];
     let hasJihai = false;
@@ -296,7 +289,7 @@ function isHonitsu(counts) {
     return suitCount === 1 && hasJihai;
 }
 
-// 清一色（1種の数牌のみ）
+// Full Flush (one suit only)
 function isChinitsu(counts) {
     const hasSuit = [false, false, false];
     let hasJihai = false;
@@ -309,7 +302,7 @@ function isChinitsu(counts) {
     return suitCount === 1 && !hasJihai;
 }
 
-// 字一色（字牌のみ）
+// All Honors (honors only)
 function isTsuiisou(counts) {
     for (let i = 0; i < 27; i++) {
         if (counts[i] > 0) return false;
@@ -317,7 +310,7 @@ function isTsuiisou(counts) {
     return true;
 }
 
-// 混老頭（1,9,字牌のみ）
+// Mixed Terminals (1, 9, honors only)
 function isHonroutou(hand) {
     return hand.every(id => {
         const info = tileIdToInfo(id);
@@ -326,7 +319,7 @@ function isHonroutou(hand) {
     });
 }
 
-// 清老頭（1,9のみ、字牌なし）
+// Pure Terminals check (only 1s and 9s, no honors)
 function isChinroutou(hand) {
     return hand.every(id => {
         const info = tileIdToInfo(id);
@@ -335,20 +328,20 @@ function isChinroutou(hand) {
     });
 }
 
-// 小三元（三元牌2刻子+三元牌雀頭）
+// Little Three Dragons (2 dragon triplets + dragon pair)
 function isShousangen(mentsu, head) {
     const sangenKou = mentsu.filter(m => m.type === 'kou' && m.tile >= 31 && m.tile <= 33).length;
     const sangenHead = head >= 31 && head <= 33;
     return sangenKou === 2 && sangenHead;
 }
 
-// 大三元（三元牌3刻子）
+// Big Three Dragons (3 dragon triplets)
 function isDaisangen(mentsu) {
     const sangenKou = mentsu.filter(m => m.type === 'kou' && m.tile >= 31 && m.tile <= 33).length;
     return sangenKou === 3;
 }
 
-// 一盃口（同じ順子が2つ）
+// Pure Double Sequence (2 identical sequences)
 function hasIipeiko(mentsu) {
     const shuns = mentsu.filter(m => m.type === 'shun');
     for (let i = 0; i < shuns.length; i++) {
@@ -359,7 +352,7 @@ function hasIipeiko(mentsu) {
     return false;
 }
 
-// 二盃口（同じ順子が2組）
+// Twice Pure Double Sequence (2 pairs of identical sequences)
 function hasRyanpeiko(mentsu) {
     const shuns = mentsu.filter(m => m.type === 'shun');
     if (shuns.length < 4) return false;
@@ -367,7 +360,7 @@ function hasRyanpeiko(mentsu) {
     return sorted[0] === sorted[1] && sorted[2] === sorted[3];
 }
 
-// 一気通貫（同じ色で123,456,789の順子）
+// Straight (same suit 123, 456, 789 sequences)
 function isIkkitsukan(mentsu) {
     const shuns = mentsu.filter(m => m.type === 'shun');
     for (let suit = 0; suit < 3; suit++) {
@@ -380,7 +373,7 @@ function isIkkitsukan(mentsu) {
     return false;
 }
 
-// 三色同順（3色で同じ数字の順子）
+// Mixed Triple Sequence (3 suits, same number sequences)
 function isSanshokuDoujun(mentsu) {
     const shuns = mentsu.filter(m => m.type === 'shun');
     for (let num = 0; num <= 6; num++) {
@@ -392,7 +385,7 @@ function isSanshokuDoujun(mentsu) {
     return false;
 }
 
-// 三色同刻（3色で同じ数字の刻子）
+// Triple Triplets (3 suits, same number triplets)
 function isSanshokuDoukou(mentsu) {
     const kous = mentsu.filter(m => m.type === 'kou' && m.tile < 27);
     for (let num = 0; num < 9; num++) {
@@ -404,21 +397,21 @@ function isSanshokuDoukou(mentsu) {
     return false;
 }
 
-// 得点計算（簡易版: 翻数ベース）
+// Score calculation (simplified: based on han count)
 function calculateScore(han) {
-    if (han >= 13) return 32000; // 役満
-    if (han >= 11) return 24000; // 三倍満
-    if (han >= 8) return 16000;  // 倍満
-    if (han >= 6) return 12000;  // 跳満
-    if (han >= 5) return 8000;   // 満貫
-    if (han === 4) return 8000;  // 満貫
+    if (han >= 13) return 32000; // Yakuman
+    if (han >= 11) return 24000; // Triple mangan
+    if (han >= 8)  return 16000; // Double mangan
+    if (han >= 6)  return 12000; // Haneman
+    if (han >= 5)  return 8000;  // Mangan
+    if (han === 4) return 8000;  // Mangan
     if (han === 3) return 4000;
     if (han === 2) return 2000;
     if (han === 1) return 1000;
     return 0;
 }
 
-// ===== ゲームクラス =====
+// ===== Game Class =====
 class MahjongFallGame {
     constructor() {
         this.gameArea = document.getElementById('game-area');
@@ -428,7 +421,7 @@ class MahjongFallGame {
 
         this.gameRunning = false;
         this.fallingTiles = [];
-        this.hand = []; // 選択した牌ID
+        this.hand = []; // Selected tile IDs
         this.tilePool = [];
         this.poolIndex = 0;
         this.timeLeft = 60;
@@ -512,7 +505,7 @@ class MahjongFallGame {
         osc.stop(this.audioContext.currentTime + 0.5);
     }
 
-    // 画面遷移
+    // Screen navigation
     showScreen(screenId) {
         const screens = document.querySelectorAll('.screen');
         screens.forEach(s => s.classList.add('hidden'));
@@ -520,7 +513,7 @@ class MahjongFallGame {
     }
 
     initScreenNavigation() {
-        // タイトル→メニュー
+        // Title -> Menu
         const titleBtn = document.getElementById('title-start-btn');
         titleBtn.addEventListener('click', () => this.showScreen('main-menu'));
         titleBtn.addEventListener('touchend', (e) => {
@@ -528,7 +521,7 @@ class MahjongFallGame {
             this.showScreen('main-menu');
         });
 
-        // メニューボタン
+        // Menu buttons
         document.getElementById('start-menu-btn').addEventListener('click', () => {
             this.mode = 'normal';
             this.showScreen('game-screen');
@@ -575,7 +568,7 @@ class MahjongFallGame {
             this.displayHighScores();
         });
 
-        // ハイスコアタブ
+        // High score tabs
         document.getElementById('normal-tab').addEventListener('click', () => {
             this.switchScoreTab('normal');
         });
@@ -604,7 +597,7 @@ class MahjongFallGame {
             this.loadSettings();
         });
 
-        // 戻るボタン
+        // Back buttons
         document.getElementById('back-to-menu-btn').addEventListener('click', () => {
             this.stopGame();
             this.showScreen('main-menu');
@@ -639,7 +632,7 @@ class MahjongFallGame {
             this.showScreen('main-menu');
         });
 
-        // 結果画面
+        // Result screen
         document.getElementById('retry-btn').addEventListener('click', () => {
             this.showScreen('game-screen');
             this.startGame();
@@ -658,7 +651,7 @@ class MahjongFallGame {
             this.showScreen('main-menu');
         });
 
-        // 設定トグル
+        // Settings toggle
         document.getElementById('sound-toggle').addEventListener('change', (e) => {
             this.setSoundEnabled(e.target.checked);
         });
@@ -668,7 +661,7 @@ class MahjongFallGame {
         document.getElementById('sound-toggle').checked = this.getSoundEnabled();
     }
 
-    // ===== ゲーム本体 =====
+    // ===== Game Core =====
     startGame() {
         this.gameRunning = true;
         this.hand = [];
@@ -676,7 +669,7 @@ class MahjongFallGame {
         this.tilePool = createTilePool();
         this.poolIndex = 0;
 
-        // モードに応じて速度設定
+        // Set speed by mode
         if (this.mode === 'superhard') {
             this.gameSpeed = 3.5;
             this.spawnDelay = 400;
@@ -696,16 +689,17 @@ class MahjongFallGame {
         this.updateHandCount();
         this.updateTimer();
 
-        // タイマー開始
+        // Start timer
         this.timerInterval = setInterval(() => {
             this.timeLeft--;
             this.updateTimer();
-            if (this.timeLeft <= 0) {
+            // Time is up
+        if (this.timeLeft <= 0) {
                 this.timeUp();
             }
         }, 1000);
 
-        // 牌の生成開始
+        // Start spawning tiles
         this.startSpawning();
         this.gameLoop();
     }
@@ -733,7 +727,7 @@ class MahjongFallGame {
 
     getNextTileId() {
         if (this.poolIndex >= this.tilePool.length) {
-            // 山が尽きたら再シャッフル
+            // Reshuffle when pool is exhausted
             this.tilePool = createTilePool();
             this.poolIndex = 0;
         }
@@ -745,7 +739,7 @@ class MahjongFallGame {
         const imgSrc = tileIdToImage(tileId);
 
         const gameAreaWidth = this.gameArea.offsetWidth;
-        // ランダムな横位置（端から少し余白を取る）
+        // Random X position with margin
         const margin = 30;
         const x = margin + Math.random() * (gameAreaWidth - margin * 2);
 
@@ -754,14 +748,14 @@ class MahjongFallGame {
         el.style.left = x + 'px';
         el.style.top = '0px';
 
-        // 牌画像
+        // Tile image
         const img = document.createElement('img');
         img.src = imgSrc;
         img.className = 'tile-img';
         img.draggable = false;
         el.appendChild(img);
 
-        // タップイベント（重複防止フラグ）
+        // Tap event (prevent duplicate taps)
         let tapped = false;
         const onTap = (e) => {
             e.preventDefault();
@@ -786,18 +780,18 @@ class MahjongFallGame {
     }
 
     selectTile(tileId, element) {
-        // 手牌に追加
+        // Add to hand
         this.hand.push(tileId);
         this.playSelectSound();
 
-        // 選択アニメーション
+        // Selection animation
         element.classList.add('selected');
 
-        // 対応するfallingTilesのフラグを立てる
+        // Mark as selected in fallingTiles
         const idx = this.fallingTiles.findIndex(t => t.element === element);
         if (idx >= 0) this.fallingTiles[idx].selected = true;
 
-        // 0.3秒後に削除
+        // Remove after 0.3s
         setTimeout(() => {
             if (this.gameArea.contains(element)) {
                 this.gameArea.removeChild(element);
@@ -806,11 +800,11 @@ class MahjongFallGame {
             if (i >= 0) this.fallingTiles.splice(i, 1);
         }, 300);
 
-        // 手牌表示を更新
+        // Update hand display
         this.updateHandDisplay();
         this.updateHandCount();
 
-        // 14枚揃ったら判定
+        // Evaluate when 14 tiles collected
         if (this.hand.length >= 14) {
             this.completeHand();
         }
@@ -819,14 +813,14 @@ class MahjongFallGame {
     gameLoop() {
         if (!this.gameRunning) return;
 
-        // 牌を落下させる
+        // Move tiles downward
         for (let i = this.fallingTiles.length - 1; i >= 0; i--) {
             const tile = this.fallingTiles[i];
             if (tile.selected) continue;
             tile.y += this.gameSpeed;
             tile.element.style.top = tile.y + 'px';
 
-            // 画面下に到達したら削除（ペナルティなし）
+            // Remove tile when it reaches bottom (no penalty)
             if (tile.y > this.gameArea.offsetHeight) {
                 if (this.gameArea.contains(tile.element)) {
                     this.gameArea.removeChild(tile.element);
@@ -853,7 +847,7 @@ class MahjongFallGame {
 
     updateHandDisplay() {
         this.handTilesElement.innerHTML = '';
-        // 手牌をソートして表示
+        // Sort and display hand
         const sorted = [...this.hand].sort((a, b) => a - b);
         sorted.forEach(id => {
             const div = document.createElement('div');
@@ -871,7 +865,7 @@ class MahjongFallGame {
         this.playCompleteSound();
         this.stopGame();
 
-        // 少し待ってから結果表示
+        // Show result after brief delay
         setTimeout(() => {
             this.showResult();
         }, 500);
@@ -909,47 +903,47 @@ class MahjongFallGame {
             resultHand.appendChild(div);
         });
 
-        // 14枚未満の場合
+        // Less than 14 tiles
         if (this.hand.length < 14) {
-            resultTitle.textContent = '時間切れ';
+            resultTitle.textContent = 'Time\'s Up';
             resultTitle.style.color = '#ff6b6b';
-            resultYaku.innerHTML = '<div class="no-yaku">14枚集められませんでした（' + this.hand.length + '枚）</div>';
-            resultScore.textContent = '0点';
+            resultYaku.innerHTML = '<div class="no-yaku">Could not collect 14 tiles (' + this.hand.length + ' tiles)</div>';
+            resultScore.textContent = '0 pts';
             this.saveHighScore(0, []);
             return;
         }
 
-        // 役判定
+        // Evaluate yaku
         const result = judgeHand(this.hand);
 
         if (result.yaku.length === 0) {
-            resultTitle.textContent = '結果発表';
+            resultTitle.textContent = 'Result';
             resultTitle.style.color = '#00ff88';
-            resultYaku.innerHTML = '<div class="no-yaku">役なし</div>';
-            resultScore.textContent = '0点';
+            resultYaku.innerHTML = '<div class="no-yaku">No Yaku</div>';
+            resultScore.textContent = '0 pts';
             this.saveHighScore(0, []);
         } else {
-            resultTitle.textContent = '和了！';
+            resultTitle.textContent = 'Win!';
             resultTitle.style.color = '#ffd700';
             let yakuHtml = '';
             result.yaku.forEach(y => {
-                yakuHtml += `<div class="yaku-item"><span class="yaku-name">${y.name}</span><span class="yaku-han">${y.han}翻</span></div>`;
+                yakuHtml += `<div class="yaku-item"><span class="yaku-name">${y.name}</span><span class="yaku-han">${y.han} han</span></div>`;
             });
             const totalHan = result.yaku.reduce((s, y) => s + y.han, 0);
-            yakuHtml += `<div class="yaku-item" style="border-top:2px solid rgba(255,215,0,0.5);margin-top:8px;padding-top:12px;"><span class="yaku-name" style="color:#ffd700;">合計</span><span class="yaku-han" style="color:#ffd700;">${totalHan}翻</span></div>`;
+            yakuHtml += `<div class="yaku-item" style="border-top:2px solid rgba(255,215,0,0.5);margin-top:8px;padding-top:12px;"><span class="yaku-name" style="color:#ffd700;">Total</span><span class="yaku-han" style="color:#ffd700;">${totalHan} han</span></div>`;
             resultYaku.innerHTML = yakuHtml;
-            resultScore.textContent = result.score.toLocaleString() + '点';
+            resultScore.textContent = result.score.toLocaleString() + ' pts';
             this.saveHighScore(result.score, result.yaku);
         }
     }
 
-    // ハイスコア管理
+    // High score management
     saveHighScore(score, yaku) {
         const key = `jantama_highscores_${this.mode}`;
         let highscores = JSON.parse(localStorage.getItem(key) || '[]');
         highscores.push({
             score: score,
-            yaku: yaku.map(y => y.name).join(', ') || 'なし',
+            yaku: yaku.map(y => y.name).join(', ') || 'None',
             date: new Date().toISOString()
         });
         highscores.sort((a, b) => b.score - a.score);
@@ -957,7 +951,7 @@ class MahjongFallGame {
         localStorage.setItem(key, JSON.stringify(highscores));
     }
 
-    // タブ切り替え
+    // Switch score tab
     switchScoreTab(tab) {
         this.currentScoreTab = tab;
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -971,7 +965,7 @@ class MahjongFallGame {
         const scores = JSON.parse(localStorage.getItem(key) || '[]');
 
         if (scores.length === 0) {
-            list.innerHTML = '<p class="no-scores">まだスコアがありません</p>';
+            list.innerHTML = '<p class="no-scores">No scores yet</p>';
             return;
         }
 
@@ -980,7 +974,7 @@ class MahjongFallGame {
             html += `
                 <li class="score-item">
                     <span class="rank">${index + 1}</span>
-                    <span class="score-value">${item.score.toLocaleString()}点</span>
+                    <span class="score-value">${item.score.toLocaleString()} pts</span>
                     <span class="score-yaku">${item.yaku}</span>
                 </li>
             `;
@@ -989,7 +983,7 @@ class MahjongFallGame {
         list.innerHTML = html;
     }
 
-    // トースト
+    // Toast notification
     showToast(message, type = 'info') {
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
@@ -1003,7 +997,7 @@ class MahjongFallGame {
     }
 }
 
-// ゲーム開始
+// Start game
 window.addEventListener('DOMContentLoaded', () => {
     new MahjongFallGame();
 });

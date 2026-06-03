@@ -1,132 +1,132 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>雀牌落下</title>
+    <title>Mahjong Drop</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- タイトル画面 -->
+    <!-- Title Screen -->
     <div id="title-screen" class="screen">
         <div id="title-container">
-            <h1 class="game-title">雀牌落下</h1>
-            <p class="game-subtitle">落ちてくる牌で役を作れ！</p>
-            <button id="title-start-btn" class="title-start-btn">スタート</button>
+            <h1 class="game-title">Mahjong Drop</h1>
+            <p class="game-subtitle">Catch falling tiles and make a winning hand!</p>
+            <button id="title-start-btn" class="title-start-btn">START</button>
             <p class="version-text">v1.0.0</p>
         </div>
     </div>
 
-    <!-- メイン画面 -->
+    <!-- Main Menu -->
     <div id="main-menu" class="screen hidden">
         <div id="main-container">
-            <h1 id="game-title">雀牌落下</h1>
+            <h1 id="game-title">Mahjong Drop</h1>
             <div id="menu-buttons">
-                <button id="start-menu-btn" class="menu-btn">ノーマル</button>
-                <button id="start-hard-btn" class="menu-btn hard-btn">ハード</button>
-                <button id="start-superhard-btn" class="menu-btn superhard-btn">スーパーハード</button>
-                <button id="highscore-btn" class="menu-btn">ハイスコア</button>
-                <button id="instructions-btn" class="menu-btn">遊び方</button>
-                <button id="settings-btn" class="menu-btn">設定</button>
+                <button id="start-menu-btn" class="menu-btn">Normal</button>
+                <button id="start-hard-btn" class="menu-btn hard-btn">Hard</button>
+                <button id="start-superhard-btn" class="menu-btn superhard-btn">Super Hard</button>
+                <button id="highscore-btn" class="menu-btn">High Scores</button>
+                <button id="instructions-btn" class="menu-btn">How to Play</button>
+                <button id="settings-btn" class="menu-btn">Settings</button>
             </div>
         </div>
     </div>
 
-    <!-- ゲーム画面 -->
+    <!-- Game Screen -->
     <div id="game-screen" class="screen hidden">
         <div id="game-container">
             <div id="game-header">
-                <div id="timer">残り: <span id="timer-value">60</span>秒</div>
-                <div id="hand-count">選択: <span id="hand-count-value">0</span>/14</div>
+                <div id="timer">Time: <span id="timer-value">60</span>s</div>
+                <div id="hand-count">Hand: <span id="hand-count-value">0</span>/14</div>
             </div>
             <div id="game-area"></div>
             <div id="hand-display">
                 <div id="hand-tiles"></div>
             </div>
             <div id="game-controls">
-                <button id="back-to-menu-btn" class="back-btn">メニューに戻る</button>
+                <button id="back-to-menu-btn" class="back-btn">Back to Menu</button>
             </div>
         </div>
     </div>
 
-    <!-- 結果画面 -->
+    <!-- Result Screen -->
     <div id="result-screen" class="screen hidden">
         <div id="result-container">
-            <h2 id="result-title">結果発表</h2>
+            <h2 id="result-title">Result</h2>
             <div id="result-hand"></div>
             <div id="result-yaku"></div>
             <div id="result-score"></div>
-            <button id="retry-btn" class="menu-btn">もう一度</button>
-            <button id="result-menu-btn" class="back-btn">メニューに戻る</button>
+            <button id="retry-btn" class="menu-btn">Play Again</button>
+            <button id="result-menu-btn" class="back-btn">Back to Menu</button>
         </div>
     </div>
 
-    <!-- 遊び方画面 -->
+    <!-- How to Play Screen -->
     <div id="instructions-screen" class="screen hidden">
         <div id="instructions-container">
-            <h2>遊び方</h2>
+            <h2>How to Play</h2>
             <div class="instruction-content">
-                <h3>基本ルール</h3>
-                <p>画面上から麻雀牌が落ちてきます。</p>
-                <p>制限時間60秒以内に14枚の牌をタップして集めてください。</p>
+                <h3>Basic Rules</h3>
+                <p>Mahjong tiles fall from the top of the screen.</p>
+                <p>Tap 14 tiles before time runs out to complete your hand.</p>
 
-                <h3>得点</h3>
-                <p>14枚集めたら自動的に役判定が行われます。</p>
-                <p>完成した役に応じて得点が加算されます。</p>
-                <p>役がない場合は0点です。</p>
+                <h3>Scoring</h3>
+                <p>Once you collect 14 tiles, your hand is automatically evaluated.</p>
+                <p>Points are awarded based on the winning combinations (yaku) you form.</p>
+                <p>No valid yaku = 0 points.</p>
 
-                <h3>役の例</h3>
+                <h3>Example Yaku</h3>
                 <div class="rule-item">
-                    <strong>七対子（25符2翻）:</strong> 同じ牌2枚x7組
+                    <strong>Seven Pairs (2 han):</strong> 7 pairs of identical tiles
                 </div>
                 <div class="rule-item">
-                    <strong>タンヤオ（1翻）:</strong> 2〜8の数牌のみ
+                    <strong>All Simples (1 han):</strong> Only tiles 2–8, no terminals or honors
                 </div>
                 <div class="rule-item">
-                    <strong>平和（1翻）:</strong> 4つの順子+雀頭
+                    <strong>Pinfu (1 han):</strong> 4 sequences + a non-value pair
                 </div>
                 <div class="rule-item">
-                    <strong>清一色（6翻）:</strong> 1種類の数牌のみ
+                    <strong>Full Flush (6 han):</strong> All tiles of one suit, no honors
                 </div>
 
-                <h3>コツ</h3>
-                <p>・同じ種類の牌を集めると役が作りやすい</p>
-                <p>・字牌は役牌になりやすい</p>
-                <p>・連番を意識して集めよう</p>
+                <h3>Tips</h3>
+                <p>· Collecting tiles of the same suit makes yaku easier to form</p>
+                <p>· Honor tiles can form Value Tile yaku (triplets)</p>
+                <p>· Aim for consecutive numbered tiles to build sequences</p>
             </div>
-            <button id="back-from-instructions-btn" class="back-btn">戻る</button>
+            <button id="back-from-instructions-btn" class="back-btn">Back</button>
         </div>
     </div>
 
-    <!-- 設定画面 -->
+    <!-- Settings Screen -->
     <div id="settings-screen" class="screen hidden">
         <div id="settings-container">
-            <h2>設定</h2>
+            <h2>Settings</h2>
             <div class="settings-content">
                 <div class="setting-item">
-                    <span class="setting-label">効果音</span>
+                    <span class="setting-label">Sound Effects</span>
                     <label class="toggle-switch">
                         <input type="checkbox" id="sound-toggle" checked>
                         <span class="toggle-slider"></span>
                     </label>
                 </div>
             </div>
-            <button id="back-from-settings-btn" class="back-btn">戻る</button>
+            <button id="back-from-settings-btn" class="back-btn">Back</button>
         </div>
     </div>
 
-    <!-- ハイスコア画面 -->
+    <!-- High Scores Screen -->
     <div id="highscore-screen" class="screen hidden">
         <div id="highscore-container">
-            <h2>ハイスコア</h2>
+            <h2>High Scores</h2>
             <div class="mode-tabs">
-                <button id="normal-tab" class="tab-btn active">ノーマル</button>
-                <button id="hard-tab" class="tab-btn">ハード</button>
-                <button id="superhard-tab" class="tab-btn">スーパーハード</button>
+                <button id="normal-tab" class="tab-btn active">Normal</button>
+                <button id="hard-tab" class="tab-btn">Hard</button>
+                <button id="superhard-tab" class="tab-btn">Super Hard</button>
             </div>
             <div id="highscore-list" class="highscore-content">
             </div>
-            <button id="back-from-highscore-btn" class="back-btn">戻る</button>
+            <button id="back-from-highscore-btn" class="back-btn">Back</button>
         </div>
     </div>
 
