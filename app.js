@@ -1,4 +1,9 @@
 // Mahjong Drop - Main Game Logic
+
+// AdMob Configuration
+const ADMOB_APP_ID = 'ca-app-pub-8707369701475326~7510713561';
+const INTERSTITIAL_AD_ID = 'ca-app-pub-8707369701475326/2047468044';
+
 // Tile image paths
 const TILE_IMAGES = {
     // Man (1m-9m)
@@ -432,12 +437,42 @@ class MahjongFallGame {
         this.audioContext = null;
         this.mode = 'normal'; // normal, hard, superhard
         this.currentScoreTab = 'normal';
+        this.gamesCompleted = 0; // Track games completed for ad display
 
         this.init();
     }
 
     init() {
         this.initScreenNavigation();
+        this.initAdMob();
+    }
+
+    // Initialize AdMob
+    async initAdMob() {
+        try {
+            const { AdMob } = Capacitor.Plugins;
+            if (!AdMob) return;
+            await AdMob.initialize({
+                requestTrackingAuthorization: false,
+                initializeForTesting: false
+            });
+            console.log('AdMob initialized');
+        } catch (e) {
+            console.error('AdMob initialization failed:', e);
+        }
+    }
+
+    // Show interstitial ad
+    async showInterstitialAd() {
+        try {
+            const { AdMob } = Capacitor.Plugins;
+            if (!AdMob) return;
+            await AdMob.prepareInterstitial({ adId: INTERSTITIAL_AD_ID });
+            await AdMob.showInterstitial();
+            console.log('Interstitial ad shown');
+        } catch (e) {
+            console.error('Failed to show interstitial ad:', e);
+        }
     }
 
     // Web Audio API
@@ -889,7 +924,7 @@ class MahjongFallGame {
         const resultScore = document.getElementById('result-score');
         const resultTitle = document.getElementById('result-title');
 
-        // 手牌表示
+        // Display hand tiles
         resultHand.innerHTML = '';
         const sorted = [...this.hand].sort((a, b) => a - b);
         sorted.forEach(id => {
@@ -910,6 +945,7 @@ class MahjongFallGame {
             resultYaku.innerHTML = '<div class="no-yaku">Could not collect 14 tiles (' + this.hand.length + ' tiles)</div>';
             resultScore.textContent = '0 pts';
             this.saveHighScore(0, []);
+            this.incrementGameCount();
             return;
         }
 
@@ -934,6 +970,18 @@ class MahjongFallGame {
             resultYaku.innerHTML = yakuHtml;
             resultScore.textContent = result.score.toLocaleString() + ' pts';
             this.saveHighScore(result.score, result.yaku);
+        }
+        this.incrementGameCount();
+    }
+
+    // Increment game count and show ad every 3 games
+    incrementGameCount() {
+        this.gamesCompleted++;
+        if (this.gamesCompleted % 3 === 0) {
+            // Show interstitial ad every 3 games
+            setTimeout(() => {
+                this.showInterstitialAd();
+            }, 1000);
         }
     }
 
