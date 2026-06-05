@@ -1,6 +1,6 @@
 {
   "appId": "com.satou0104.mahjongdrop",
-  "appName": "雀牌落下",
+  "appName": "Mahjong Drop",
   "webDir": "www",
   "bundledWebRuntime": false,
   "ios": {
