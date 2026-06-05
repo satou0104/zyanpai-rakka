@@ -95,7 +95,7 @@ If you experience any issues or have questions:
 We welcome your suggestions for improving the game!
 
 ### Privacy
-See our [Privacy Policy](https://github.com/satou0104/mahjong-drop/blob/main/PRIVACY.md) for information about data collection.
+See our [Privacy Policy](https://github.com/satou0104/zyanpai-rakka/blob/main/PRIVACY.md) for information about data collection.
 
 ## Credits
 
@@ -105,7 +105,7 @@ See our [Privacy Policy](https://github.com/satou0104/mahjong-drop/blob/main/PRI
 
 ## Follow Development
 
-- GitHub: https://github.com/satou0104
+- GitHub: https://github.com/satou0104/zyanpai-rakka
 
 ## Thank You!
 
